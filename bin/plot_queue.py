@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 
-def parse_qfile(fname, out_dir):
+def parse_qfile(fname):
     fmat = r"(?P<time>[\d.]*) (?P<from_node>[\d]*) (?P<to_node>[\d]*) (?P<q_size_B>[\d.]*) (?P<q_size_p>[\d.]*) (?P<arr_p>[\d.]*) (?P<dep_p>[\d.]*) (?P<drop_p>[\d.]*) (?P<arr_B>[\d.]*) (?P<dep_B>[\d.]*) (?P<drop_B>[\d.]*)"
 
     time = []
@@ -26,16 +26,17 @@ def parse_qfile(fname, out_dir):
                 time.append(t)
                 s = float(searchObj.groupdict()['q_size_p'])
                 q_size.append(s)
-    make_plot(time, q_size, 'time (sec)', 'queue size (packets)', 'Queue Size over Time', 'q_size_vs_time', out_dir)
+    return time, q_size
 
-def make_plot(xdata, ydata, xlabel, ylabel, title, filename, out_dir):
-
-    plt.plot(xdata, ydata, linestyle='-', marker='o')
+def config_plot(xlabel, ylabel, title, xlim):
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
     plt.title(title)
     plt.grid()
-    
+    plt.legend()
+    plt.xlim(xlim)
+
+def save_plot(filename, out_dir):    
     plot_filename = os.path.join(out_dir, filename + '.pdf')
     pp = PdfPages(plot_filename)
     pp.savefig()
@@ -55,9 +56,15 @@ def main():
         print >> sys.stderr, "ERROR: failed to parse command line options"
         sys.exit(1)
 
+    # create output directory if it doesn't exist
     if not os.path.exists(args.out_dir):
         os.makedirs(args.out_dir)
-    parse_qfile(args.qmon_file, args.out_dir)
+
+    # parse and plot queue size
+    time, q_size = parse_qfile(args.qmon_file)
+    plt.plot(time, q_size, linestyle='-', marker='o')
+    config_plot('time (sec)', 'queue size (packets)', 'Queue Size over Time')
+    save_plot('q_size_vs_time', args.out_dir)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
 
-# TCP testing
 #
 # Create a simple 3 host topology:
 #
@@ -11,6 +10,14 @@
 #          /    
 #         h2    
 #
+
+if {$argc != 2} {
+    puts "wrong number of arguments, expected 2, got $argc"
+    exit 0
+}
+
+set congestion_alg [lindex $argv 0]
+set out_q_file [lindex $argv 1]
 
 # samp_int (sec)
 set samp_int 0.01
@@ -24,6 +31,14 @@ set link_delay 0.25ms
 set tcp_window 400
 # run_time (sec)
 set run_time 10.0
+
+
+#### DCTCP Parameters ####
+# DCTCP_K (pkts)
+set DCTCP_K 20
+# DCTCP_g (0 < g < 1)
+set DCTCP_g 0.0625
+
 
 set tcl_dir $::env(TCL_DIR)
 
@@ -44,13 +59,27 @@ set h2 [$ns node]
 set s1 [$ns node]
 set h3 [$ns node]
 
-#Create links between the nodes
-$ns duplex-link $h1 $s1 $link_cap $link_delay DropTail
-$ns duplex-link $h2 $s1 $link_cap $link_delay DropTail
-$ns duplex-link $s1 $h3 $link_cap $link_delay DropTail
+# Queue options
+Queue set limit_ $q_size
 
-#Set Queue Size of link (s1-h3)
-$ns queue-limit $s1 $h3 $q_size
+Queue/RED set setbit_ true
+Queue/RED set gentle_ false
+Queue/RED set q_weight_ 1.0
+Queue/RED set mark_p_ 1.0
+Queue/RED set thresh_ $DCTCP_K
+Queue/RED set maxthresh_ $DCTCP_K
+
+
+#Create links between the nodes
+if {[string compare $congestion_alg "DCTCP"] == 0} { 
+    $ns duplex-link $h1 $s1 $link_cap $link_delay RED 
+    $ns duplex-link $h2 $s1 $link_cap $link_delay RED 
+    $ns duplex-link $s1 $h3 $link_cap $link_delay RED 
+} else {
+    $ns duplex-link $h1 $s1 $link_cap $link_delay DropTail
+    $ns duplex-link $h2 $s1 $link_cap $link_delay DropTail
+    $ns duplex-link $s1 $h3 $link_cap $link_delay DropTail
+}
 
 #Give node position (for NAM)
 $ns duplex-link-op $h1 $s1 orient right-down
@@ -60,6 +89,13 @@ $ns duplex-link-op $s1 $h3 orient right
 #Monitor the queue for link (s1-h3). (for NAM)
 $ns duplex-link-op $s1 $h3 queuePos 0.5
 
+# HOST options
+if {[string compare $congestion_alg "DCTCP"] == 0} {
+    Agent/TCP set ecnhat_ true
+    Agent/TCPSink set ecnhat_ true
+    Agent/TCP set ecnhat_g_ $DCTCP_g;
+}
+
 set tcp1 [$ns create-connection TCP/Reno $h1 TCPSink $h3 1]
 $tcp1 set window_ $tcp_window 
 set tcp2 [$ns create-connection TCP/Reno $h2 TCPSink $h3 2]
@@ -68,7 +104,7 @@ set ftp1 [$tcp1 attach-source FTP]
 set ftp2 [$tcp2 attach-source FTP]
 
 # queue monitoring
-set qf_size [open $tcl_dir/out/queue.size w]
+set qf_size [open $tcl_dir/out/$out_q_file w]
 set qmon_size [$ns monitor-queue $s1 $h3 $qf_size $samp_int]
 [$ns link $s1 $h3] queue-sample-timeout
 
