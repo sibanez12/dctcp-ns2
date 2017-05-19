@@ -4,6 +4,8 @@ Installing & Patching NS-2 to add support for DCTCP:
   $ make install_ns2
   $ make patch_ns2
 
+Update the path for DCTCP_NS2 in settings.sh
+
 Add the following to your ~/.bashrc, adjusting for your installation path
 ```
 ################################
