@@ -1,0 +1,36 @@
+
+Installing & Patching NS-2 to add support for DCTCP:
+  $ make install_deps
+  $ make install_ns2
+  $ make patch_ns2
+
+Add the following to your ~/.bashrc, adjusting for your installation path
+```
+################################
+#### NS-2 v2.34 Environment ####
+################################
+NS2_PATH=/home/sibanez/classes/CS244/pa3/dctcp-ns2/ns-2/ns-allinone-2.34
+# LD_LIBRARY_PATH
+OTCL_LIB=$NS2_PATH/otcl-1.13
+NS2_LIB=$NS2_PATH/lib
+X11_LIB=/usr/X11R6/lib
+USR_LOCAL_LIB=/usr/local/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OTCL_LIB:$NS2_LIB:$X11_LIB:$USR_LOCAL_LIB
+
+# TCL_LIBRARY
+TCL_LIB=$NS2_PATH/tcl8.4.18/library
+USR_LIB=/usr/lib
+export TCL_LIBRARY=$TCL_LIB:$USR_LIB
+
+# PATH
+XGRAPH=$NS2_PATH/bin:$NS2_PATH/tcl8.4.18/unix:$NS2_PATH/tk8.4.18/unix
+NS=$NS2_PATH/ns-2.34/
+NAM=$NS2_PATH/nam-1.14/
+PATH=$PATH:$XGRAPH:$NS:$NAM
+
+####################
+#### DCTCP NS2 #####
+####################
+source /home/sibanez/classes/CS244/pa3/dctcp-ns2/settings.sh
+```
+
