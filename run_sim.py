@@ -18,7 +18,7 @@ PLOTS_DIR = 'plots/'
 
 def run_sim():
 
-    for congestion_alg in ['TCP', 'DCTCP']:
+    for congestion_alg in ['TCP','DCTCP']:
         out_q_file = congestion_alg + '_q_size.out' 
         # run NS-2 simulation
         os.system('ns tcl/run_sim.tcl {0} {1}'.format(congestion_alg, out_q_file))
