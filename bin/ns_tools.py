@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 
-def parse_qfile(fname):
+def parse_qfile(fname, t_min=None, t_max=None):
     fmat = r"(?P<time>[\d.]*) (?P<from_node>[\d]*) (?P<to_node>[\d]*) (?P<q_size_B>[\d.]*) (?P<q_size_p>[\d.]*) (?P<arr_p>[\d.]*) (?P<dep_p>[\d.]*) (?P<drop_p>[\d.]*) (?P<arr_B>[\d.]*) (?P<dep_B>[\d.]*) (?P<drop_B>[\d.]*)"
 
     time = []
@@ -23,18 +23,22 @@ def parse_qfile(fname):
             searchObj = re.search(fmat, line)
             if searchObj is not None:
                 t = float(searchObj.groupdict()['time'])
+                if (t_min is not None and t < t_min):
+                    continue
+                if (t_max is not None and t > t_max):
+                    continue
                 time.append(t)
                 s = float(searchObj.groupdict()['q_size_p'])
                 q_size.append(s)
+    
     return time, q_size
 
-def config_plot(xlabel, ylabel, title, xlim):
+def config_plot(xlabel, ylabel, title, legend_loc=None):
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
     plt.title(title)
     plt.grid()
-    plt.legend()
-    plt.xlim(xlim)
+    plt.legend(loc=legend_loc)
 
 def save_plot(filename, out_dir):    
     plot_filename = os.path.join(out_dir, filename + '.pdf')

@@ -1,23 +1,15 @@
 
 #
-# Create a simple 3 host topology:
-#
-#         h1    
-#          \    
-# 100Mb,1ms \  100Mb, 1ms 
-#           s1 ---------- h3 
-# 100Mb,1ms /   
-#          /    
-#         h2    
-#
+# Create a simple star topology
 
-if {$argc != 2} {
-    puts "wrong number of arguments, expected 2, got $argc"
+if {$argc != 3} {
+    puts "wrong number of arguments, expected 3, got $argc"
     exit 0
 }
 
 set congestion_alg [lindex $argv 0]
 set out_q_file [lindex $argv 1]
+set num_flows [lindex $argv 2]
 
 # samp_int (sec)
 set samp_int 0.01
@@ -59,11 +51,13 @@ $ns color 2 Red
 set nf [open $tcl_dir/out/out.nam w]
 $ns namtrace-all $nf
 
-#Create four nodes
-set h1 [$ns node]
-set h2 [$ns node]
-set s1 [$ns node]
-set h3 [$ns node]
+#Create switch_node, dst_node, and num_flows src nodes
+set switch_node [$ns node]
+set dst_node [$ns node]
+
+for {set i 0} {$i < $num_flows} {incr i} {
+    set h($i) [$ns node]
+}
 
 # Queue options
 Queue set limit_ $q_size
@@ -87,22 +81,25 @@ Queue/RED set deque_prio_ $deque_prio_
 
 #Create links between the nodes
 if {[string compare $congestion_alg "DCTCP"] == 0} { 
-    $ns duplex-link $h1 $s1 $link_cap $link_delay RED 
-    $ns duplex-link $h2 $s1 $link_cap $link_delay RED 
-    $ns duplex-link $s1 $h3 $link_cap $link_delay RED 
+    set queue_type RED
 } else {
-    $ns duplex-link $h1 $s1 $link_cap $link_delay DropTail
-    $ns duplex-link $h2 $s1 $link_cap $link_delay DropTail
-    $ns duplex-link $s1 $h3 $link_cap $link_delay DropTail
+    set queue_type DropTail
 }
 
-#Give node position (for NAM)
-$ns duplex-link-op $h1 $s1 orient right-down
-$ns duplex-link-op $h2 $s1 orient right-up
-$ns duplex-link-op $s1 $h3 orient right
+$ns duplex-link $switch_node $dst_node $link_cap $link_delay $queue_type
+
+for {set i 0} {$i < $num_flows} {incr i} {
+    $ns duplex-link $h($i) $switch_node $link_cap $link_delay $queue_type
+}
+
+
+##Give node position (for NAM)
+#$ns duplex-link-op $h1 $s1 orient right-down
+#$ns duplex-link-op $h2 $s1 orient right-up
+#$ns duplex-link-op $s1 $h3 orient right
 
 #Monitor the queue for link (s1-h3). (for NAM)
-$ns duplex-link-op $s1 $h3 queuePos 0.5
+$ns duplex-link-op $switch_node $dst_node queuePos 0.5
 
 # HOST options
 Agent/TCP set window_ $tcp_window
@@ -128,51 +125,45 @@ if {[string compare $congestion_alg "DCTCP"] == 0} {
     Agent/TCPSink set ecnhat_ true
     Agent/TCP set ecnhat_g_ $DCTCP_g;
 
-    # setup flow 1
-    set tcp1 [new Agent/TCP/FullTcp]
-    set sink1 [new Agent/TCP/FullTcp]
-    $ns attach-agent $h1 $tcp1
-    $ns attach-agent $h3 $sink1
-    $tcp1 set fid_ 1
-    $sink1 set fid_ 1
-    $ns connect $tcp1 $sink1
-    # set up TCP-level connections
-    $sink1 listen
-
-    # setup flow 2
-    set tcp2 [new Agent/TCP/FullTcp]
-    set sink2 [new Agent/TCP/FullTcp]
-    $ns attach-agent $h2 $tcp2
-    $ns attach-agent $h3 $sink2
-    $tcp1 set fid_ 2
-    $sink1 set fid_ 2
-    $ns connect $tcp2 $sink2
-    # set up TCP-level connections
-    $sink2 listen
+    for {set i 0} {$i < $num_flows} {incr i} {
+        set tcp($i) [new Agent/TCP/FullTcp]
+        set sink($i) [new Agent/TCP/FullTcp]
+        $ns attach-agent $h($i) $tcp($i)
+        $ns attach-agent $dst_node $sink($i)
+        $tcp($i) set fid_ [expr $i]
+        $sink($i) set fid_ [expr $i]
+        $ns connect $tcp($i) $sink($i)
+        # set up TCP-level connections
+        $sink($i) listen
+    }
 
 } else {
 
-    set tcp1 [$ns create-connection TCP/Reno $h1 TCPSink $h3 1]
-    set tcp2 [$ns create-connection TCP/Reno $h2 TCPSink $h3 2]
+    for {set i 0} {$i < $num_flows} {incr i} {
+        set tcp($i) [$ns create-connection TCP/Reno $h($i) TCPSink $dst_node [expr $i]]
+    }
+
+    #set tcp1 [$ns create-connection TCP/Reno $h1 TCPSink $h3 1]
+    #set tcp2 [$ns create-connection TCP/Reno $h2 TCPSink $h3 2]
 }
 
-set ftp1 [$tcp1 attach-source FTP]
-$ftp1 set type_ FTP
-set ftp2 [$tcp2 attach-source FTP]
-$ftp2 set type_ FTP
+for {set i 0} {$i < $num_flows} {incr i} {
+    set ftp($i) [$tcp($i) attach-source FTP]
+    $ftp($i) set type_ FTP 
+}
 
 # queue monitoring
 set qf_size [open $tcl_dir/out/$out_q_file w]
-set qmon_size [$ns monitor-queue $s1 $h3 $qf_size $samp_int]
-[$ns link $s1 $h3] queue-sample-timeout
+set qmon_size [$ns monitor-queue $switch_node $dst_node $qf_size $samp_int]
+[$ns link $switch_node $dst_node] queue-sample-timeout
 
 #Schedule events for the CBR and FTP agents
-$ns at 0.1 "$ftp1 start"
-$ns at 1.5 "$ftp2 start"
-$ns at [expr $run_time - 0.5] "$ftp2 stop"
-$ns at [expr $run_time - 0.5] "$ftp1 stop"
+for {set i 0} {$i < $num_flows} {incr i} {
+    $ns at 0.1 "$ftp($i) start"
+    $ns at [expr $run_time - 0.5] "$ftp($i) stop"
+}
 
-#Call the finish procedure after 5 seconds of simulation time
+#Call the finish procedure after run_time seconds of simulation time
 $ns at $run_time "finish"
 
 #Define a 'finish' procedure
