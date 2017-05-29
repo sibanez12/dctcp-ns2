@@ -1,0 +1,5 @@
+*.pyc
+*.swp
+plots/
+tcl/out
+ns-2/ns-allinone-2.34
