@@ -33,6 +33,28 @@ def parse_qfile(fname, t_min=None, t_max=None):
     
     return time, q_size
 
+def parse_namfile(fname, t_min=None, t_max=None):
+    total_bytes = 0
+    start_time = 0
+    with open(fname) as f:
+        for line in f:
+            split_line = line.split()
+            if ((split_line[0] == 'r' and split_line[6] == '1' and
+                 split_line[8] == 'tcp')):
+                t = float(split_line[2])
+                if (t_min is not None and t < t_min):
+                    continue
+                if (t_max is not None and t > t_max):
+                    continue
+                total_bytes += int(split_line[10])
+    if t_min is not None:
+        start_time = t_min
+    if t_max is not None:
+        end_time = t_max
+    else:
+        end_time = t
+    return total_bytes * 8 / float(end_time - start_time)
+
 def config_plot(xlabel, ylabel, title, legend_loc=None):
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)

@@ -2,8 +2,8 @@
 #
 # Create a simple star topology
 
-if {$argc != 3} {
-    puts "wrong number of arguments, expected 3, got $argc"
+if {$argc != 6} {
+    puts "wrong number of arguments, expected 6, got $argc"
     exit 0
 }
 
@@ -16,9 +16,9 @@ set samp_int 0.01
 # q_size (pkts)
 set q_size 200
 # link_cap (Mbps)
-set link_cap 100Mbps
+set link_cap [lindex $argv 4]
 # link_delay (ms)
-set link_delay 0.25ms
+set link_delay [lindex $argv 5]
 # tcp_window (pkts)
 set tcp_window 1000000
 # run_time (sec)
@@ -28,7 +28,7 @@ set pktSize 1460
 
 #### DCTCP Parameters ####
 # DCTCP_K (pkts)
-set DCTCP_K 20
+set DCTCP_K [lindex $argv 3]
 # DCTCP_g (0 < g < 1)
 set DCTCP_g 0.0625
 # ackRatio

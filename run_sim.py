@@ -22,7 +22,12 @@ def make_fig_1():
         out_q_file = congestion_alg + '_q_size.out' 
         # run NS-2 simulation
         num_flows = 2
-        os.system('ns tcl/run_sim.tcl {0} {1} {2}'.format(congestion_alg, out_q_file, num_flows))
+        K = 20
+        link_cap = '100Mbps'
+        link_delay = '0.25ms'
+        os.system('ns tcl/run_sim.tcl {0} {1} {2} {3} {4} {5}'.format(congestion_alg, out_q_file,
+                                                                      num_flows, K, link_cap,
+                                                                      link_delay))
         # parse and plot queue size
         time, q_size = ns_tools.parse_qfile(os.path.join('tcl/out/', out_q_file), t_min=4.0, t_max=9.0)
         plt.plot(time, q_size, linestyle='-', marker='o', label=congestion_alg)
@@ -35,8 +40,13 @@ def make_fig_13():
     for num_flows in [2, 20]:
         for congestion_alg in ['TCP','DCTCP']:
             out_q_file = congestion_alg + '_q_size.out' 
+            K = 20
+            link_cap = '100Mbps'
+            link_delay = '0.25ms'
             # run NS-2 simulation
-            os.system('ns tcl/run_sim.tcl {0} {1} {2}'.format(congestion_alg, out_q_file, num_flows))
+            os.system('ns tcl/run_sim.tcl {0} {1} {2} {3} {4} {5}'.format(congestion_alg, out_q_file,
+                                                                          num_flows, K, link_cap,
+                                                                          link_delay))
             # parse and plot queue size
             time, q_size = ns_tools.parse_qfile(os.path.join('tcl/out/', out_q_file), t_min=4.0, t_max=9.0)
             plt_label = congestion_alg + '_' + str(num_flows) + '_flows'
@@ -49,7 +59,28 @@ def make_fig_13():
     ns_tools.save_plot('cdf', PLOTS_DIR) 
 
 def make_fig_14():
-    pass
+    for congestion_alg in ['TCP', 'DCTCP']:
+        throughputs = []
+        Ks = [i for i in range(1,11,1)]
+        Ks += [i for i in range(15,35,5)]
+        Ks += [i for i in range(40,101,10)]
+        for K in Ks:
+            out_q_file = congestion_alg + '_q_size.out'
+            # run NS-2 simulation
+            num_flows = 2
+            link_cap = '100Mbps'
+            link_delay = '10ms'
+            # run NS-2 simulation
+            os.system('ns tcl/run_sim.tcl {0} {1} {2} {3} {4} {5}'.format(congestion_alg, out_q_file,
+                                                                          num_flows, K, link_cap,
+                                                                          link_delay))
+            # Save throughput
+            throughputs.append(ns_tools.parse_namfile(os.path.join('tcl/out/',
+                               'out.nam'), t_min=4.0, t_max=9.0))
+        plt.plot(Ks, throughputs, linestyle='-', marker='o', label=congestion_alg)
+
+    ns_tools.config_plot('K', 'Throughput (Mbps)', 'Throughput over K')
+    ns_tools.save_plot('throughput_vs_k', PLOTS_DIR)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -64,8 +95,8 @@ def main():
     if (args.fig_13):
         make_fig_13()
 
-#    if (args.fig_14):
-#        make_fig_14()
+    if (args.fig_14):
+        make_fig_14()
 
 
 if __name__ == "__main__":
