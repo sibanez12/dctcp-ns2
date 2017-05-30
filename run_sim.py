@@ -18,6 +18,10 @@ import ns_tools
 PLOTS_DIR = 'plots/'
 
 def make_fig_1():
+    if not os.path.exists(PLOTS_DIR):
+            os.makedirs(PLOTS_DIR)
+    if not os.path.exists('tcl/out'):
+            os.makedirs('tcl/out')
     for congestion_alg in ['TCP','DCTCP']:
         out_q_file = congestion_alg + '_q_size.out' 
         # run NS-2 simulation
@@ -37,6 +41,10 @@ def make_fig_1():
 
 
 def make_fig_13():
+    if not os.path.exists(PLOTS_DIR):
+            os.makedirs(PLOTS_DIR)
+    if not os.path.exists('tcl/out'):
+            os.makedirs('tcl/out')
     for num_flows in [2, 20]:
         for congestion_alg in ['TCP','DCTCP']:
             out_q_file = congestion_alg + '_q_size.out' 
@@ -59,6 +67,10 @@ def make_fig_13():
     ns_tools.save_plot('cdf', PLOTS_DIR) 
 
 def make_fig_14():
+    if not os.path.exists(PLOTS_DIR):
+            os.makedirs(PLOTS_DIR)
+    if not os.path.exists('tcl/out'):
+            os.makedirs('tcl/out')
     for congestion_alg in ['TCP', 'DCTCP']:
         throughputs = []
         Ks = [i for i in range(1,11,1)]
@@ -75,7 +87,7 @@ def make_fig_14():
                                                                           num_flows, K, link_cap,
                                                                           link_delay))
             # Save throughput
-            throughputs.append(ns_tools.parse_namfile(os.path.join('tcl/out/',
+            throughputs.append(1e-06 * ns_tools.parse_namfile(os.path.join('tcl/out/',
                                'out.nam'), t_min=4.0, t_max=9.0))
         plt.plot(Ks, throughputs, linestyle='-', marker='o', label=congestion_alg)
 
