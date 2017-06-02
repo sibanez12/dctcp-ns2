@@ -1,10 +1,7 @@
-
 Installing & Patching NS-2 to add support for DCTCP:
   $ make install_deps
   $ make install_ns2
   $ make patch_ns2
-
-Update the path for DCTCP_NS2 in settings.sh
 
 Add the following to your ~/.bashrc, adjusting for your installation path
 ```
@@ -29,10 +26,14 @@ XGRAPH=$NS2_PATH/bin:$NS2_PATH/tcl8.4.18/unix:$NS2_PATH/tk8.4.18/unix
 NS=$NS2_PATH/ns-2.34/
 NAM=$NS2_PATH/nam-1.14/
 PATH=$PATH:$XGRAPH:$NS:$NAM
-
-####################
-#### DCTCP NS2 #####
-####################
-source /home/sibanez/classes/CS244/pa3/dctcp-ns2/settings.sh
 ```
 
+Run the simulations and publish the results:
+  $ ./run.sh
+
+The output plots are in the plots folder or can be viewed using a
+browser in localhost:8000 or <HOST_IP>:8000
+
+If you want to run directly the run_sim.py script, first update the path for
+DCTCP_NS2 in settings.sh and run:
+  $ source settings.sh
