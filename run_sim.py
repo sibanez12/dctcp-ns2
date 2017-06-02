@@ -34,10 +34,11 @@ def make_fig_1():
                                                                       link_delay))
         # parse and plot queue size
         time, q_size = ns_tools.parse_qfile(os.path.join('tcl/out/', out_q_file), t_min=4.0, t_max=9.0)
-        plt.plot(time, q_size, linestyle='-', marker='o', label=congestion_alg)
+        plt.plot(time, q_size, linestyle='-', marker='', label=congestion_alg)
 
     ns_tools.config_plot('time (sec)', 'queue size (packets)', 'Queue Size over Time')
     ns_tools.save_plot('q_size_vs_time', PLOTS_DIR)
+    plt.cla()
 
 
 def make_fig_13():
@@ -61,10 +62,12 @@ def make_fig_13():
             # Compute the CDF
             sorted_data = np.sort(q_size)
             yvals=np.arange(len(sorted_data))/float(len(sorted_data)-1)
-            plt.plot(sorted_data, yvals, linestyle='-', label=plt_label)
+            plt.plot(sorted_data, yvals, linestyle='-', marker='', label=plt_label)
 
     ns_tools.config_plot('queue size (packets)', 'Cumulative Fraction', 'Queue Length CDF', legend_loc='upper center')
     ns_tools.save_plot('cdf', PLOTS_DIR) 
+    plt.cla()
+
 
 def make_fig_14():
     if not os.path.exists(PLOTS_DIR):
@@ -93,6 +96,7 @@ def make_fig_14():
 
     ns_tools.config_plot('K', 'Throughput (Mbps)', 'Throughput over K')
     ns_tools.save_plot('throughput_vs_k', PLOTS_DIR)
+    plt.cla()
 
 def main():
     parser = argparse.ArgumentParser()
