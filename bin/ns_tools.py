@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-
-"""
-Parse the sampled queue size output file and plot the queue size over time
-"""
-
 import sys, os, re, argparse
 import numpy as np
 import matplotlib
@@ -12,7 +7,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-
+"""
+Parse the sampled queue size output file and plot the queue size over time
+"""
 def parse_qfile(fname, t_min=None, t_max=None):
     fmat = r"(?P<time>[\d.]*) (?P<from_node>[\d]*) (?P<to_node>[\d]*) (?P<q_size_B>[\d.]*) (?P<q_size_p>[\d.]*) (?P<arr_p>[\d.]*) (?P<dep_p>[\d.]*) (?P<drop_p>[\d.]*) (?P<arr_B>[\d.]*) (?P<dep_B>[\d.]*) (?P<drop_B>[\d.]*)"
 

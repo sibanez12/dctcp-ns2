@@ -37,7 +37,7 @@ def make_fig_1():
         plt.plot(time, q_size, linestyle='-', marker='', label=congestion_alg)
 
     ns_tools.config_plot('time (sec)', 'queue size (packets)', 'Queue Size over Time')
-    ns_tools.save_plot('q_size_vs_time', PLOTS_DIR)
+    ns_tools.save_plot('figure_1', PLOTS_DIR)
     plt.cla()
 
 
@@ -65,7 +65,7 @@ def make_fig_13():
             plt.plot(sorted_data, yvals, linestyle='-', marker='', label=plt_label)
 
     ns_tools.config_plot('queue size (packets)', 'Cumulative Fraction', 'Queue Length CDF', legend_loc='upper center')
-    ns_tools.save_plot('cdf', PLOTS_DIR) 
+    ns_tools.save_plot('figure_13', PLOTS_DIR) 
     plt.cla()
 
 
@@ -95,14 +95,14 @@ def make_fig_14():
         plt.plot(Ks, throughputs, linestyle='-', marker='o', label=congestion_alg)
 
     ns_tools.config_plot('K', 'Throughput (Mbps)', 'Throughput over K')
-    ns_tools.save_plot('throughput_vs_k', PLOTS_DIR)
+    ns_tools.save_plot('figure_14', PLOTS_DIR)
     plt.cla()
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--fig_1', action='store_true')
-    parser.add_argument('--fig_13', action='store_true')
-    parser.add_argument('--fig_14', action='store_true')
+    parser.add_argument('--fig_1', action='store_true', help="reproduce figure 1 from the DCTCP paper")
+    parser.add_argument('--fig_13', action='store_true', help="reproduce figure 13 from the DCTCP paper")
+    parser.add_argument('--fig_14', action='store_true', help="reproduce figure 14 from the DCTCP paper")
     args = parser.parse_args()
 
     if (args.fig_1):
