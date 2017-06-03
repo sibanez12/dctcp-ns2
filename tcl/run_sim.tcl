@@ -140,7 +140,7 @@ if {[string compare $congestion_alg "DCTCP"] == 0} {
 } else {
 
     for {set i 0} {$i < $num_flows} {incr i} {
-        set tcp($i) [$ns create-connection TCP/Reno $h($i) TCPSink $dst_node [expr $i]]
+        set tcp($i) [$ns create-connection TCP/Linux $h($i) TCPSink/Sack1 $dst_node [expr $i]]
     }
 
     #set tcp1 [$ns create-connection TCP/Reno $h1 TCPSink $h3 1]
