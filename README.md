@@ -43,7 +43,8 @@ up automatically (may need to enter sudo password).
 
 5. Please identify the External IP address of the machine you are running the 
 simulations on and navigate to http://<IP_ADDRESS> or to http://localhost
-if you are running on a local machine. 
+if you are running on a local machine. Click on a link to view the
+corresponding figure. 
 
 
 Additional Notes
